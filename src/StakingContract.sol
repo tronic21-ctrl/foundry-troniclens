@@ -14,7 +14,6 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  *         Contract harus memiliki cukup ETH untuk membayar reward saat unstake.
  */
 contract StakingContract is ReentrancyGuard {
-
     // ─────────────────────────────────────────────
     //  State Variables
     // ─────────────────────────────────────────────
@@ -69,8 +68,8 @@ contract StakingContract is ReentrancyGuard {
 
     /// @notice Membatasi akses function hanya untuk owner contract
     modifier onlyOwner() {
-    require(msg.sender == owner, "Bukan owner");
-    _;
+        require(msg.sender == owner, "Bukan owner");
+        _;
     }
 
     // ─────────────────────────────────────────────
@@ -133,8 +132,7 @@ contract StakingContract is ReentrancyGuard {
     function unstake() public nonReentrant {
         require(stakedAmount[msg.sender] > 0, "Tidak ada stake aktif");
         require(
-            block.timestamp >= stakeTimestamp[msg.sender] + minimumStakePeriod,
-            "Minimum stake period belum tercapai"
+            block.timestamp >= stakeTimestamp[msg.sender] + minimumStakePeriod, "Minimum stake period belum tercapai"
         );
 
         uint256 amount = stakedAmount[msg.sender];
@@ -149,29 +147,29 @@ contract StakingContract is ReentrancyGuard {
         stakeTimestamp[msg.sender] = 0;
 
         // Interactions — baru transfer ETH
-        (bool success, ) = payable(msg.sender).call{value: amount + reward}("");
+        (bool success,) = payable(msg.sender).call{value: amount + reward}("");
         require(success, "Transfer gagal");
 
         emit Unstaked(msg.sender, amount, reward);
     }
 
     /**
- * @notice Mengubah reward rate per detik (hanya owner)
- * @dev    Perubahan berlaku instan — mempengaruhi semua staker aktif
- * @param  newRate Reward baru dalam wei per detik
- */
-function setRewardRate(uint256 newRate) public onlyOwner {
-    require(newRate <= MAX_REWARD_RATE, "Rate melebihi batas maksimal");
-    rewardRatePerSecond = newRate;
-}
+     * @notice Mengubah reward rate per detik (hanya owner)
+     * @dev    Perubahan berlaku instan — mempengaruhi semua staker aktif
+     * @param  newRate Reward baru dalam wei per detik
+     */
+    function setRewardRate(uint256 newRate) public onlyOwner {
+        require(newRate <= MAX_REWARD_RATE, "Rate melebihi batas maksimal");
+        rewardRatePerSecond = newRate;
+    }
 
-/**
- * @notice Mengubah minimum periode staking (hanya owner)
- * @param  newPeriod Periode baru dalam detik
- */
-function setMinimumStakePeriod(uint256 newPeriod) public onlyOwner {
-    minimumStakePeriod = newPeriod;
-}
+    /**
+     * @notice Mengubah minimum periode staking (hanya owner)
+     * @param  newPeriod Periode baru dalam detik
+     */
+    function setMinimumStakePeriod(uint256 newPeriod) public onlyOwner {
+        minimumStakePeriod = newPeriod;
+    }
 
     /**
      * @notice Mengambil informasi lengkap posisi staking seorang user
@@ -183,16 +181,15 @@ function setMinimumStakePeriod(uint256 newPeriod) public onlyOwner {
      * @return duration  Durasi staking hingga saat ini (dalam detik)
      * @return reward    Total reward yang terakumulasi (dalam wei)
      */
-    function getStakeInfo(address user) public view returns (
-        uint256 amount,
-        uint256 timestamp,
-        uint256 duration,
-        uint256 reward
-    ) {
-        amount    = stakedAmount[user];
+    function getStakeInfo(address user)
+        public
+        view
+        returns (uint256 amount, uint256 timestamp, uint256 duration, uint256 reward)
+    {
+        amount = stakedAmount[user];
         timestamp = stakeTimestamp[user];
-        duration  = timestamp > 0 ? block.timestamp - timestamp : 0;
-        reward    = calculateReward(user);
+        duration = timestamp > 0 ? block.timestamp - timestamp : 0;
+        reward = calculateReward(user);
     }
 
     // ─────────────────────────────────────────────
